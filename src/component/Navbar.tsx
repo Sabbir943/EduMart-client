@@ -89,7 +89,7 @@ export default function Navbar() {
             <Link href="/contactUs" className="hover:text-indigo-600 transition-colors">
               Contact
             </Link>
-            <Link href="/about" className="hover:text-indigo-600 transition-colors">
+            <Link href="/aboutUs" className="hover:text-indigo-600 transition-colors">
               About Us
             </Link>
           </div>
