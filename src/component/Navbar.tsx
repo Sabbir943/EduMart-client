@@ -86,7 +86,7 @@ export default function Navbar() {
             <Link href="/courses" className="hover:text-indigo-600 transition-colors">
               Courses
             </Link>
-            <Link href="/contact" className="hover:text-indigo-600 transition-colors">
+            <Link href="/contactUs" className="hover:text-indigo-600 transition-colors">
               Contact
             </Link>
             <Link href="/about" className="hover:text-indigo-600 transition-colors">
