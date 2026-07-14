@@ -231,13 +231,13 @@ export default function Navbar() {
             ) : (
               <div className="flex flex-col gap-2 pt-2">
                 <Link
-                  href="/sign-in"
+                  href="/signIn"
                   className="w-full text-center py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg"
                 >
                   Sign In
                 </Link>
                 <Link
-                  href="/sign-up"
+                  href="/signUp"
                   className="w-full text-center py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg"
                 >
                   Sign Up
