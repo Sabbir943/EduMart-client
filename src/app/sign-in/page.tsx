@@ -5,11 +5,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { authClient } from "@/lib/auth-client"; // Your Better Auth client helper
+import { authClient } from "@/lib/auth-client";
 
-// Icons
 import { FcGoogle } from "react-icons/fc";
-
 import { FiMail, FiLock, FiBookOpen } from "react-icons/fi";
 
 type SignInFormData = {
@@ -27,14 +25,15 @@ export default function SignInPage() {
     formState: { errors },
   } = useForm<SignInFormData>();
 
-  // Handle Email & Password Sign In
   const onSubmit = async (data: SignInFormData) => {
     setLoading(true);
 
     try {
       const res = await authClient.signIn.email({
-        email: data?.email,
-        password: data?.password,
+        email: data.email,
+        password: data.password,
+        // লগইন করার পর রিডাইরেকশন ক্লায়েন্ট সাইডেই হ্যান্ডেল করা নিরাপদ
+        callbackURL: undefined 
       });
 
       if (res.error) {
@@ -42,16 +41,9 @@ export default function SignInPage() {
       } else {
         toast.success("Signed in successfully!");
 
-        // Determine user role for redirection
-        const role = (res.data?.user as any)?.role?.toLowerCase() || "student";
-
-        if (role === "admin") {
-          router.push("/dashboard/admin");
-        } else if (role === "mentor") {
-          router.push("/dashboard/mentor");
-        } else {
-          router.push("/dashboard/student");
-        }
+       
+        const userRole = (res.data?.user as any)?.role || "student";
+        router.push(`/dashboard/${userRole}`);
       }
     } catch (err: any) {
       toast.error(err.message || "Something went wrong during sign in.");
@@ -60,21 +52,20 @@ export default function SignInPage() {
     }
   };
 
-  // Handle Social Authentication
-  const handleSocialSignIn = async (provider: "google" | "github") => {
+  const handleGoogleAuth = async () => {
     try {
       await authClient.signIn.social({
-        provider,
-        callbackURL: "/dashboard/student",
+        provider: "google",
+        // গুগল দিয়ে প্রথমবার সাইন ইন করার পর ডিফল্ট রিডাইরেক্ট লোকেশন
+        callbackURL: "/dashboard/student", 
       });
     } catch (err: any) {
-      toast.error(`Failed to sign in with ${provider}`);
+      toast.error("Failed to authenticate with Google");
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      {/* Header */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <Link href="/" className="flex justify-center items-center gap-2 text-indigo-600 font-bold text-2xl">
           <FiBookOpen className="w-8 h-8" />
@@ -85,7 +76,7 @@ export default function SignInPage() {
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           Don't have an account?{" "}
-          <Link href="/sign-up" className="font-medium text-indigo-600 hover:text-indigo-500">
+          <Link href="/sign-up" className="font-medium text-indigo-600 hover:text-indigo-500 cursor-pointer">
             Sign up
           </Link>
         </p>
@@ -94,19 +85,14 @@ export default function SignInPage() {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-gray-100">
           
-          {/* Social Auth Section */}
-         
-            <button
-              onClick={() => handleSocialSignIn("google")}
-              type="button"
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors focus:outline-none"
-            >
-              <FcGoogle className="w-5 h-5" />
-              <span>Google</span>
-            </button>
-
-           
-        
+          <button
+            onClick={handleGoogleAuth}
+            type="button"
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer focus:outline-none"
+          >
+            <FcGoogle className="w-5 h-5" />
+            <span>Continue with Google</span>
+          </button>
 
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
@@ -117,10 +103,7 @@ export default function SignInPage() {
             </div>
           </div>
 
-          {/* Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            
-            {/* Email Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700">Email Address</label>
               <div className="mt-1 relative rounded-md shadow-sm">
@@ -140,19 +123,15 @@ export default function SignInPage() {
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
               </div>
-              {errors?.email && (
-                <p className="mt-1 text-xs text-red-600">{errors?.email?.message}</p>
+              {errors.email && (
+                <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>
               )}
             </div>
 
-            {/* Password Field */}
             <div>
               <div className="flex items-center justify-between">
                 <label className="block text-sm font-medium text-gray-700">Password</label>
-                <Link
-                  href="/forgot-password"
-                  className="text-xs text-indigo-600 hover:text-indigo-500"
-                >
+                <Link href="/forgot-password" className="text-xs text-indigo-600 hover:text-indigo-500 cursor-pointer">
                   Forgot password?
                 </Link>
               </div>
@@ -178,16 +157,14 @@ export default function SignInPage() {
               )}
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 transition-colors"
+              className="w-full mt-2 py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 cursor-pointer focus:outline-none disabled:opacity-50 transition-colors"
             >
               {loading ? "Signing In..." : "Sign In"}
             </button>
           </form>
-
         </div>
       </div>
     </div>
