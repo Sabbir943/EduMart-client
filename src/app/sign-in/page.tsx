@@ -43,7 +43,7 @@ export default function SignInPage() {
 
        
         const userRole = (res.data?.user as any)?.role || "student";
-        router.push(`/dashboard/${userRole}`);
+        router.push('/');
       }
     } catch (err: any) {
       toast.error(err.message || "Something went wrong during sign in.");
