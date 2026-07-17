@@ -102,13 +102,29 @@ export default function CourseDetailsPage() {
         }
     }, [id, session]);
 
-    const handleInteraction = async (type: string, payload?: any) => {
+ const handleInteraction = async (type: string, payload?: any) => {
         if (!course) return;
+        
+        let targetPayload = payload;
+
+        // 💡 MERN Stack Optimization: like অথবা love রিঅ্যাকশনের সময় ইউজারের সেশন ডেটা পে লোডে যুক্ত করা
+        if (type === "like" || type === "love") {
+            if (!session?.user?.email) {
+                setErrorMessage("Please login to react or save this workspace artifacts.");
+                setTimeout(() => setErrorMessage(null), 3000);
+                return;
+            }
+            targetPayload = {
+                email: session.user.email,
+                username: session.user.name || "Anonymous Student"
+            };
+        }
+
         try {
             const res = await fetch(`http://localhost:8000/api/courses/${id}/interaction`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ type, payload }),
+                body: JSON.stringify({ type, payload: targetPayload }),
             });
             const data = await res.json();
             if (data.success) {
@@ -116,7 +132,7 @@ export default function CourseDetailsPage() {
                 if (type === "comment") setCommentText("");
             }
         } catch (error) {
-            console.error("Interaction failed:", error);
+            console.error("Interaction failed to sync with cloud map:", error);
         } finally {
             if (type === "comment") setSubmittingComment(false);
         }
