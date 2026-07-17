@@ -30,7 +30,7 @@ The primary objective of EduPlatform is to deliver a modern, type-safe, and high
 
 | Layer | Technology | Functional Domain |
 | :--- | :--- | :--- |
-| **Frontend UI** | Next.js 14 (App Router) | Core Layout & Routing Architecture |
+| **Frontend UI** | Next.js 14 (App Router) | Typescript | Core Layout & Routing Architecture |
 | **Styling** | Tailwind CSS | Minimalist UI & Dynamic Theme Controls |
 | **Icons & Motion** | React Icons (`fi`), Framer Motion | Visual Micro-interactions |
 | **Authentication** | Better-Auth Ecosystem | Session Management & OAuth Handshake |
