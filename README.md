@@ -5,7 +5,7 @@ A highly optimized, minimalist, and high-density MERN stack e-learning platform 
 ---
 
 ## 🎯 Project Objective
-EduPlatform-এর মূল লক্ষ্য হলো একটি মডার্ন, টাইপ-সেফ এবং মিনিমালিস্ট লার্নিং ম্যানেজমেন্ট ইকোসিস্টেম তৈরি করা। এটি ডেভেলপারদের জন্য রিফাইনড কোডবেস মেইনটেইন করার পাশাপাশি স্টুডেন্ট এবং মেন্টরদের রিয়েল-টাইম ডাটা সিঙ্ক্রোনাইজেশন, কোর্স এনরোলমেন্ট ট্র্যাকিং এবং ক্লাস্টারেড এনালিটিক্স উইজেট প্রদানের মাধ্যমে একটি প্রিমিয়াম লার্নিং এক্সপেরিয়েন্স নিশ্চিত করে।
+The primary objective of EduPlatform is to deliver a modern, type-safe, and high-performance learning ecosystem. Built using the clean paradigms of the MERN stack and Next.js, it streamlines student-to-mentor interaction channels through real-time data synchronization, automated aggregation pipelines, and highly resilient state containment.
 
 ---
 
@@ -42,21 +42,21 @@ EduPlatform-এর মূল লক্ষ্য হলো একটি মডা
 
 ## 🔒 Authentication & Security Architecture
 
-Ecosystem-এর সিকিউরিটি এবং সেশন মূলত **Better-Auth** ফ্রেমওয়ার্ক দ্বারা নিয়ন্ত্রিত। 
+The platform's security framework and session context are completely isolated and driven by the **Better-Auth** engine.
 
-* **OAuth 2.0 Integration:** গুগল ক্লায়েন্ট আইডির মাধ্যমে সিকিউর সোশ্যাল লগইন মেকানিজম।
-* **Session Persistence:** ক্লায়েন্ট সাইডে `authClient.useSession` ব্যবহার করে রিয়েল-টাইম ক্রেডেনশিয়াল সিঙ্ক্রোনাইজেশন এবং রাউট গার্ডস প্রটেকশন।
-* **Database Layout Integration:** Better-Auth স্ট্যান্ডার্ড অনুযায়ী মঙ্গোডিবি ক্লাস্টারে ডেটা মূলত নিচের কালেকশনগুলোতে স্ট্রাকচার্ড থাকে:
+* **OAuth 2.0 Integration:** Secure social authentication handshake utilizing Google Client credentials.
+* **Session Persistence:** High-performance real-time credential extraction using client hook layers (`authClient.useSession`) for state consistency and route guard protection.
+* **Database Layout Integration:** Under the Better-Auth standard schema, data structures are mapped cleanly into the following database cluster collections:
   * `users` — Handles verified profile identities and credentials.
   * `courses` — Maintains curriculum specifications, tuition values, and instructor tags.
   * `enrollments` — Keeps transactional logs mapping users to active course streams.
 
 ---
 
-## 🚀 Getting Started & Environment
+## 🚀 Getting Started & Environment Setup
 
-### 1. Installation
-Clone the repository and install dependencies for both layers:
+### 1. Installation & Syncing
+Clone the repository instance and compile dependencies for both ecosystem layers:
 ```bash
 # Clone the repository
 git clone [https://github.com/your-username/eduplatform.git](https://github.com/your-username/eduplatform.git)
