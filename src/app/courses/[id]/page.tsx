@@ -11,14 +11,26 @@ import {
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client"; 
 
+interface Comment {
+    id: string;
+    username: string;
+    text: string;
+    createdAt: string;
+}
+
+interface Feedback {
+    rating: number;
+    user: string;
+}
+
 interface Course {
     _id: string;
     name: string;
     imgUrl: string;
     description: string;
     duration: string;
-    rating: number;
-    price: number;
+    rating: any; // 💡 ডাটাবেজের ডাইনামিক ফ্লোট/স্ট্রিং কাস্টিং হ্যান্ডেল করার জন্য any দেওয়া হলো
+    price: any;  // 💡 ডাটাবেজের ডাইনামিক ফ্লোট/স্ট্রিং কাস্টিং হ্যান্ডেল করার জন্য any দেওয়া হলো
     category: string;
     courseType?: string;
     mentorEmail?: string; 
@@ -27,12 +39,8 @@ interface Course {
         dislikes: number;
         love: number;
         reports: number;
-        comments: Array<{
-            id: string;
-            username: string;
-            text: string;
-            createdAt: string;
-        }>;
+        comments: Comment[];
+        feedbacks?: Feedback[]; // 💡 ইন্টারফেসে ফিডব্যাক ডেটা স্ট্রাকচার যোগ করা হলো
     };
 }
 
@@ -120,7 +128,6 @@ export default function CourseDetailsPage() {
         setEnrollLoading(true);
         setErrorMessage(null);
 
-        // 💡 ফিক্স গার্ড লজিক: কোনো কারণে ডাটাবেজের পুরোনো অবজেক্টে mentorEmail মিসিং থাকলে ক্র্যাশ করবে না, ডিফল্ট ইমেইল সেট হবে।
         const validMentorEmail = course.mentorEmail || (course as any).email || (course as any).userEmail || "admin@eduplatform.com";
 
         try {
@@ -221,10 +228,13 @@ export default function CourseDetailsPage() {
                                 <div className="p-2.5 bg-indigo-100 rounded-xl text-indigo-600"><FiClock className="w-5 h-5" /></div>
                                 <div><p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Duration</p><p className="text-sm font-bold text-black">{course.duration}</p></div>
                             </div>
+                            
+                            {/* 💡 ফিক্সড রেটিং ব্লক ট্যাগ পার্সিং এরর */}
                             <div className="bg-slate-50 border border-slate-200 p-3.5 rounded-2xl flex items-center gap-3">
                                 <div className="p-2.5 bg-amber-100 rounded-xl text-amber-600"><FiStar className="w-5 h-5 fill-amber-500" /></div>
-                                <div><p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Rating</p><p className="text-sm font-bold text-black">{Number(course.rating).toFixed(1)} / 5.0</p></div>
+                                <div><p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Rating</p><p className="text-sm font-bold text-black">{Number(course.rating || 5.0).toFixed(1)} / 5.0</p></div>
                             </div>
+
                             <div className="bg-slate-50 border border-slate-200 p-3.5 rounded-2xl flex items-center gap-3 col-span-2 sm:col-span-1">
                                 <div className="p-2.5 bg-emerald-100 rounded-xl text-emerald-600"><FiBookOpen className="w-5 h-5" /></div>
                                 <div><p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Status</p><p className="text-sm font-bold text-black">{course.courseType || "Premium"}</p></div>
@@ -238,11 +248,10 @@ export default function CourseDetailsPage() {
                             <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Course Tuition Price</p>
                             <div className="flex items-baseline text-black font-black text-4xl tracking-tight">
                                 <FiDollarSign className="text-slate-400 text-2xl -mr-1 self-center" />
-                                <span>{course.courseType === "Free" ? "0.00" : Number(course.price).toFixed(2)}</span>
+                                <span>{course.courseType === "Free" ? "0.00" : Number(course.price || 0).toFixed(2)}</span>
                             </div>
                         </div>
 
-                        {/* মেন্টর রোল-বেসড প্রোটেকশন বাটন */}
                         <button 
                             disabled={isAlreadyEnrolled || (session?.user as any)?.role === "mentor"} 
                             onClick={() => {
@@ -285,7 +294,7 @@ export default function CourseDetailsPage() {
                     </div>
                 </div>
 
-                {/* 💬 Discussion Board */}
+                {/* Discussion Board */}
                 <div className="bg-slate-50 border border-slate-200 p-5 sm:p-8 rounded-3xl shadow-sm space-y-6">
                     <div className="flex items-center gap-2.5 border-b border-slate-200 pb-4">
                         <FiMessageSquare className="w-5 h-5 text-indigo-600" />
@@ -355,7 +364,7 @@ export default function CourseDetailsPage() {
 
             </div>
 
-            {/* Modal */}
+            {/* Confirmation Enroll Modal */}
             <AnimatePresence>
                 {showEnrollModal && (
                     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
