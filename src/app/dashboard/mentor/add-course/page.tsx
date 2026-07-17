@@ -1,9 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
-import { FiPlusCircle, FiLink, FiClock, FiDollarSign, FiStar, FiFileText, FiLayers, FiShield } from "react-icons/fi";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation"; // 💡 ডিরেক্টরি রিডাইরেক্টের জন্য
+import { authClient } from "@/lib/auth-client"; 
+import { FiPlusCircle, FiLink, FiClock, FiDollarSign, FiStar, FiFileText, FiLayers, FiShield, FiAlertTriangle } from "react-icons/fi";
 
 export default function AddCoursePage() {
+  const router = useRouter();
+  
+  // 🚨 Better Auth সেশন ও ইউজার ডেটা
+  const { data: sessionData, isPending } = authClient.useSession(); 
+  const user = sessionData?.user;
+
   const [formData, setFormData] = useState({
     name: "",
     imgUrl: "",
@@ -12,18 +20,28 @@ export default function AddCoursePage() {
     rating: "5.0",
     price: "",
     category: "Web Development",
-    courseType: "Premium", // নতুন যোগ করা টাইপ (Free/Premium)
+    courseType: "Premium", 
   });
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
 
+  // 🛡️ সিকিউরিটি গার্ড: ইউজার যদি মেন্টর না হয়, তাকে ড্যাশবোর্ড থেকে বের করে দেওয়া হবে
+  useEffect(() => {
+    if (!isPending && (!user || (user as any).role !== "mentor")) {
+      router.push("/"); // মেন্টর না হলে হোমপেজে পাঠিয়ে দেবে
+    }
+  }, [user, isPending, router]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     
-    // যদি টাইপ 'Free' সিলেক্ট করা হয়, তাহলে প্রাইজ অটোমেটিক ০ হয়ে যাবে
-    if (name === "courseType" && value === "Free") {
-      setFormData((prev) => ({ ...prev, [name]: value, price: "0" }));
+    if (name === "courseType") {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+        price: value === "Free" ? "0" : "", 
+      }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
@@ -34,6 +52,15 @@ export default function AddCoursePage() {
     setLoading(true);
     setMessage({ type: "", text: "" });
 
+    // 🚨 মেন্টর ইমেইল ভ্যালিডেশন গার্ড
+    if (!user?.email) {
+      setMessage({ type: "error", text: "Fatal Security Error: Valid Mentor profile credentials could not be resolved." });
+      setLoading(false);
+      return;
+    }
+
+    const finalPrice = formData.courseType === "Free" ? 0 : parseFloat(formData.price);
+
     try {
       const response = await fetch("http://localhost:8000/api/courses", {
         method: "POST",
@@ -42,15 +69,18 @@ export default function AddCoursePage() {
         },
         body: JSON.stringify({
           ...formData,
-          price: parseFloat(formData.price) || 0,
+          price: isNaN(finalPrice) ? 0 : finalPrice,
           rating: parseFloat(formData.rating) || 5.0,
+          
+          // 🔒 কারেন্ট লগইন থাকা মেন্টরের রিয়েল ইমেইলটিই ডেটাবেজে সাবমিট হবে:
+          mentorEmail: user.email 
         }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        setMessage({ type: "success", text: "Course added successfully to Workspace!" });
+        setMessage({ type: "success", text: "Course successfully synced and published to Workspace Matrix!" });
         setFormData({ 
           name: "", 
           imgUrl: "", 
@@ -62,20 +92,40 @@ export default function AddCoursePage() {
           courseType: "Premium"
         });
       } else {
-        setMessage({ type: "error", text: data.message || "Failed to add course." });
+        setMessage({ type: "error", text: data.message || "Failed to sync package with database server." });
       }
     } catch (error) {
-      setMessage({ type: "error", text: "Server connection failed." });
+      setMessage({ type: "error", text: "Cloud Database synchronization pipeline failed." });
     } finally {
       setLoading(false);
     }
   };
 
+  // ১. লোডিং স্টেট রেন্ডার
+  if (isPending) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center bg-slate-950 text-white">
+        <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  // ২. অননুমোদিত ইউজারদের জন্য রেস্ট্রিকশন নোটিশ
+  if (!user || (user as any).role !== "mentor") {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center bg-slate-950 text-white p-6 text-center">
+        <FiAlertTriangle className="w-14 h-14 text-rose-500 mb-4 animate-pulse" />
+        <h2 className="text-xl font-black tracking-tight text-white">Access Violation Matrix</h2>
+        <p className="text-xs text-slate-400 mt-2 max-w-sm">This space is explicitly reserved for authorized Mentor credentials only.</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6 px-4 sm:px-0">
+    <div className="max-w-4xl mx-auto space-y-6 px-4 sm:px-0 pt-4">
       
-      {/* Header section (High Contrast text) */}
-      <div className="flex items-center gap-3 mt-4">
+      {/* Header section */}
+      <div className="flex items-center gap-3">
         <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 rounded-2xl">
           <FiPlusCircle className="w-6 h-6" />
         </div>
@@ -90,8 +140,8 @@ export default function AddCoursePage() {
         
         {/* Status Message */}
         {message.text && (
-          <div className={`p-4 rounded-xl text-xs font-semibold border ${
-            message.type === "success" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"
+          <div className={`p-4 rounded-xl text-xs font-bold border transition-all ${
+            message.type === "success" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-rose-500/10 text-rose-400 border-rose-500/20"
           }`}>
             {message.text}
           </div>
@@ -126,7 +176,7 @@ export default function AddCoursePage() {
             </select>
           </div>
 
-          {/* 🌟 New Field: Course Type (Free / Premium) */}
+          {/* Access Tier */}
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-slate-200 tracking-wide uppercase flex items-center gap-1">
               <FiShield className="w-3 h-3 text-slate-400" /> Access Tier
@@ -145,10 +195,11 @@ export default function AddCoursePage() {
               name="price" 
               value={formData.price} 
               onChange={handleChange} 
-              required 
+              required={formData.courseType !== "Free"} 
               disabled={formData.courseType === "Free"}
               placeholder={formData.courseType === "Free" ? "0.00 (Free)" : "e.g. 49.99"} 
               step="0.01" 
+              min="0"
               className="w-full px-4 py-3 bg-slate-950 border border-slate-800/80 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed" 
             />
           </div>
@@ -168,7 +219,11 @@ export default function AddCoursePage() {
 
         {/* Submit Button */}
         <div className="pt-2">
-          <button type="submit" disabled={loading} className="w-full sm:w-auto px-6 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all duration-200 shadow-lg shadow-indigo-600/20 disabled:opacity-50 active:scale-95">
+          <button 
+            type="submit" 
+            disabled={loading || isPending}
+            className="w-full sm:w-auto px-6 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all duration-200 shadow-lg shadow-indigo-600/20 disabled:opacity-50 active:scale-[0.98] cursor-pointer"
+          >
             {loading ? "Adding Course..." : "Add Course Workspace"}
           </button>
         </div>

@@ -46,7 +46,7 @@ export default function CourseDetailsPage() {
     // 🎛️ Enrollment States
     const [showEnrollModal, setShowEnrollModal] = useState(false);
     const [enrollLoading, setEnrollLoading] = useState(false);
-    const [isAlreadyEnrolled, setIsAlreadyEnrolled] = useState(false); // 👈 এনরোলমেন্ট স্টেট ট্র্যাক করার জন্য
+    const [isAlreadyEnrolled, setIsAlreadyEnrolled] = useState(false); 
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -114,11 +114,14 @@ export default function CourseDetailsPage() {
         }
     };
 
-    // এনরোলমেন্ট কনফার্মেশন সাবমিট করা
+    // 🛠️ এনরোলমেন্ট কনফার্মেশন সাবমিট করা
     const handleEnrollment = async () => {
         if (!course || !session?.user) return;
         setEnrollLoading(true);
         setErrorMessage(null);
+
+        // 💡 ফিক্স গার্ড লজিক: কোনো কারণে ডাটাবেজের পুরোনো অবজেক্টে mentorEmail মিসিং থাকলে ক্র্যাশ করবে না, ডিফল্ট ইমেইল সেট হবে।
+        const validMentorEmail = course.mentorEmail || (course as any).email || (course as any).userEmail || "admin@eduplatform.com";
 
         try {
             const res = await fetch("http://localhost:8000/api/enrollments", {
@@ -128,7 +131,7 @@ export default function CourseDetailsPage() {
                     courseId: course._id,
                     userEmail: session.user.email,
                     userName: session.user.name,
-                    mentorEmail: course.mentorEmail
+                    mentorEmail: validMentorEmail 
                 })
             });
 
@@ -136,7 +139,7 @@ export default function CourseDetailsPage() {
 
             if (data.success) {
                 setSuccessMessage("Enrolled successfully in this workspace matrix!");
-                setIsAlreadyEnrolled(true); // 👈 বাটন ইনস্ট্যান্ট চেঞ্জ করার জন্য স্টেট আপডেট
+                setIsAlreadyEnrolled(true); 
                 setShowEnrollModal(false);
                 setTimeout(() => setSuccessMessage(null), 4000);
             } else {
@@ -239,37 +242,31 @@ export default function CourseDetailsPage() {
                             </div>
                         </div>
 
-                 
-                 
-{/* 🛠️ আলটিমেট মেন্টর রোল-বেসড প্রোটেকশন বাটন */}
-<button 
-    // 🔒 ইউজার অলরেডি এনরোলড থাকলে অথবা লগইন করা ইউজারের রোল যদি "mentor" হয়, তবে বাটন শুরুতেই ডিজেবল থাকবে
-    disabled={isAlreadyEnrolled || (session?.user as any)?.role === "mentor"} 
-    onClick={() => {
-        if (!session) {
-            setErrorMessage("Please login to register or checkout this workspace.");
-            return;
-        }
-        setShowEnrollModal(true);
-    }}
-    className={`w-full py-4 font-black text-sm rounded-2xl shadow-md transition-all tracking-wide uppercase ${
-        isAlreadyEnrolled 
-        ? "bg-emerald-100 text-emerald-700 border border-emerald-300 cursor-not-allowed shadow-none" 
-        // 🔒 মেন্টর অ্যাকাউন্টের জন্য লকড গ্রে কালার স্টাইলিং
-        : (session?.user as any)?.role === "mentor"
-        ? "bg-slate-200 text-slate-400 border border-slate-300 cursor-not-allowed shadow-none" 
-        : "bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white cursor-pointer active:scale-[0.98]"
-    }`}
->
-    {/* 🛠️ মেন্টর ও স্টুডেন্টের জন্য ডাইনামিক বাটন টেক্সট */}
-    {isAlreadyEnrolled 
-        ? "Enrolled" 
-        // 🔒 রোল যদি মেন্টর হয় তাহলে এই লেখাটি দেখাবে
-        : (session?.user as any)?.role === "mentor" 
-        ? "Mentor Account (Restricted)" 
-        : "Enroll Workspace Now"
-    }
-</button>
+                        {/* মেন্টর রোল-বেসড প্রোটেকশন বাটন */}
+                        <button 
+                            disabled={isAlreadyEnrolled || (session?.user as any)?.role === "mentor"} 
+                            onClick={() => {
+                                if (!session) {
+                                    setErrorMessage("Please login to register or checkout this workspace.");
+                                    return;
+                                }
+                                setShowEnrollModal(true);
+                            }}
+                            className={`w-full py-4 font-black text-sm rounded-2xl shadow-md transition-all tracking-wide uppercase ${
+                                isAlreadyEnrolled 
+                                ? "bg-emerald-100 text-emerald-700 border border-emerald-300 cursor-not-allowed shadow-none" 
+                                : (session?.user as any)?.role === "mentor"
+                                ? "bg-slate-200 text-slate-400 border border-slate-300 cursor-not-allowed shadow-none" 
+                                : "bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white cursor-pointer active:scale-[0.98]"
+                            }`}
+                        >
+                            {isAlreadyEnrolled 
+                                ? "Enrolled" 
+                                : (session?.user as any)?.role === "mentor" 
+                                ? "Mentor Account (Restricted)" 
+                                : "Enroll Workspace Now"
+                            }
+                        </button>
 
                         <div className="border-t border-slate-200 pt-4">
                             <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider mb-3 text-center">Community Reactions</p>
