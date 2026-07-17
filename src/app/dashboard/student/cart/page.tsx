@@ -32,7 +32,7 @@ const MyCart = () => {
         setLoading(true);
         try {
             const res = await fetch(
-                `http://localhost:8000/api/student/my-courses?email=${session.user.email}&page=1&limit=20`
+                `${process.env.NEXT_PUBLIC_SERVER}/api/student/my-courses?email=${session.user.email}&page=1&limit=20`
             );
             const data = await res.json();
             if (data.success) {
@@ -56,7 +56,7 @@ const MyCart = () => {
         if (!selectedEnrollment) return;
         setDeleteLoading(true);
         try {
-            const res = await fetch(`http://localhost:8000/api/student/enrollments/${selectedEnrollment.id}`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER}/api/student/enrollments/${selectedEnrollment.id}`, {
                 method: "DELETE",
             });
             const data = await res.json();

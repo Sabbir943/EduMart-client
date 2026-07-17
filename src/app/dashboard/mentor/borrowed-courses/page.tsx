@@ -30,7 +30,7 @@ useEffect(() => {
         const userRole = (session.user as any).role;
         const paramType = userRole === "mentor" ? "mentorEmail" : "userEmail";
         
-        const res = await fetch(`http://localhost:8000/api/enrollments?${paramType}=${session?.user?.email}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER}/api/enrollments?${paramType}=${session?.user?.email}`);
         const data = await res.json();
         if (data.success) {
           setHistoryLogs(data.history || []);

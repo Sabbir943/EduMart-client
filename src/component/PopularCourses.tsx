@@ -21,7 +21,7 @@ const PopularCourses = () => {
     useEffect(() => {
         const fetchPopularCourses = async () => {
             try {
-                const res = await fetch("http://localhost:8000/api/courses/popular");
+                const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER}/api/courses/popular`);
                 const data = await res.json();
                 if (data.success) {
                     setCourses(data.courses || []);

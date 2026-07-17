@@ -62,7 +62,7 @@ export default function AddCoursePage() {
     const finalPrice = formData.courseType === "Free" ? 0 : parseFloat(formData.price);
 
     try {
-      const response = await fetch("http://localhost:8000/api/courses", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER}/api/courses`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

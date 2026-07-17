@@ -27,7 +27,7 @@ export default function MyCoursesDashboard() {
   const fetchMyCourses = async () => {
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:8000/api/courses");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER}/api/courses`);
       const data = await res.json();
       if (data.success) {
         setCourses(data.courses);
@@ -48,7 +48,7 @@ export default function MyCoursesDashboard() {
     if (!deleteId) return;
     setActionLoading(true);
     try {
-      const res = await fetch(`http://localhost:8000/api/courses/${deleteId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER}/api/courses/${deleteId}`, {
         method: "DELETE",
       });
       const data = await res.json();
@@ -69,7 +69,7 @@ export default function MyCoursesDashboard() {
     if (!editCourse) return;
     setActionLoading(true);
     try {
-      const res = await fetch(`http://localhost:8000/api/courses/${editCourse._id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER}/api/courses/${editCourse._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editCourse),

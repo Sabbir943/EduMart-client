@@ -29,7 +29,7 @@ const SavedCourse = () => {
         try {
             // ব্যাকএন্ডের কুয়েরি প্যারামিটার (email এবং username) অনুযায়ী ডেটা ফেচ করা হচ্ছে
             const res = await fetch(
-                `http://localhost:8000/api/student/saved-courses?email=${session.user.email}&username=${session.user.name || ""}`
+                `${process.env.NEXT_PUBLIC_SERVER}/api/student/saved-courses?email=${session.user.email}&username=${session.user.name || ""}`
             );
             const data = await res.json();
             if (data.success) {

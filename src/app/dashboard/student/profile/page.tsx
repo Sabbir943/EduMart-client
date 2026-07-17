@@ -32,7 +32,7 @@ const ProfilePage = () => {
 
         try {
             // আমাদের কাস্টম ব্যাকএন্ড এপিআই-তে রিকোয়েস্ট পাঠানো হচ্ছে
-            const res = await fetch("http://localhost:8000/api/user/update-profile", {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER}/api/user/update-profile`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

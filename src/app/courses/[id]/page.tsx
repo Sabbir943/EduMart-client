@@ -64,7 +64,7 @@ export default function CourseDetailsPage() {
     // ১. কোর্সের বিস্তারিত তথ্য ফেচ করা
     const fetchCourseDetails = async () => {
         try {
-            const res = await fetch(`http://localhost:8000/api/courses/${id}`);
+            const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER}/api/courses/${id}`);
             const data = await res.json();
             if (data.success) {
                 setCourse(data.course);
@@ -80,7 +80,7 @@ export default function CourseDetailsPage() {
     const checkEnrollmentStatus = async () => {
         if (!id || !session?.user?.email) return;
         try {
-            const res = await fetch(`http://localhost:8000/api/enrollments/check?courseId=${id}&userEmail=${session.user.email}`);
+            const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER}/api/enrollments/check?courseId=${id}&userEmail=${session.user.email}`);
             const data = await res.json();
             if (data.success) {
                 setIsAlreadyEnrolled(data.enrolled);
@@ -121,7 +121,7 @@ export default function CourseDetailsPage() {
         }
 
         try {
-            const res = await fetch(`http://localhost:8000/api/courses/${id}/interaction`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER}/api/courses/${id}/interaction`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ type, payload: targetPayload }),
@@ -147,7 +147,7 @@ export default function CourseDetailsPage() {
         const validMentorEmail = course.mentorEmail || (course as any).email || (course as any).userEmail || "admin@eduplatform.com";
 
         try {
-            const res = await fetch("http://localhost:8000/api/enrollments", {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER}/api/enrollments`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

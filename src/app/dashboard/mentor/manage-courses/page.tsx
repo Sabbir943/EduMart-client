@@ -53,7 +53,7 @@ export default function ManageCoursePage() {
     const fetchMentorCourses = async () => {
       if (!user?.email) return;
       try {
-        const res = await fetch(`http://localhost:8000/api/mentor/courses?email=${user.email}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER}/api/mentor/courses?email=${user.email}`);
         const data = await res.json();
         if (data.success) {
           setCourses(data.courses);

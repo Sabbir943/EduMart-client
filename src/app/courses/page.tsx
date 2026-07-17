@@ -46,7 +46,7 @@ export default function CoursesPage() {
 
                 const query = new URLSearchParams(params);
 
-                const res = await fetch(`http://localhost:8000/api/courses?${query.toString()}`);
+                const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER}/api/courses?${query.toString()}`);
                 
                 // 🛠️ HTML রেসপন্স ক্র্যাশ গার্ড: রেসপন্স টাইপ চেক করা
                 const contentType = res.headers.get("content-type");

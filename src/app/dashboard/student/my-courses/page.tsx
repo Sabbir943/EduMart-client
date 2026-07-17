@@ -20,7 +20,7 @@ interface Course {
 
 const MyCourse = () => {
     const { data: session, isPending: authPending } = authClient.useSession();
-    const [courses, setCourses] = useState<Course[]>(null);
+    const [courses, setCourses] = useState<Course[]>([]);
     const [loading, setLoading] = useState(true);
     
     // পেজিনেশন স্টেট
@@ -32,7 +32,7 @@ const MyCourse = () => {
         if (!session?.user?.email) return;
         setLoading(true);
         try {
-            const res = await fetch(`http://localhost:8000/api/student/my-courses?email=${session.user.email}&page=${page}&limit=${limit}`);
+            const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER}/api/student/my-courses?email=${session.user.email}&page=${page}&limit=${limit}`);
             const data = await res.json();
             if (data.success) {
                 setCourses(data.courses);
